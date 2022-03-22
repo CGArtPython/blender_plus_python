@@ -284,6 +284,8 @@ def gen_background():
 def main():
     """
     Python code to generate simple loop animations with cubes
+
+    Tutorial: https://www.youtube.com/watch?v=GgX7rGcrHVI
     """
     context = setup_scene()
     add_lights()

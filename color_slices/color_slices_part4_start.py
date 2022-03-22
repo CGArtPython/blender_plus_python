@@ -326,6 +326,9 @@ def main():
     """
     Python code for this art project
     https://www.artstation.com/artwork/48wX6L
+
+    Tutorial Video about this script:
+    https://www.youtube.com/watch?v=e3eH1bq1D_U&list=PLB8-FQgROBmlzQ7Xkq4YU7u08Zh3iuyPD&index=5
     """
     context = setup_scene()
 

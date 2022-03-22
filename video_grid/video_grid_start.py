@@ -235,6 +235,8 @@ def gen_centerpiece():
 def main():
     """
     Python code to generate a grid of loop animations from mp4 files
+
+    Tutorial: https://www.youtube.com/watch?v=1toJeVNOdnk
     """
     setup_scene()
     enable_import_images_as_planes()

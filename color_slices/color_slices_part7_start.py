@@ -380,7 +380,7 @@ def setup_material(context):
 def gen_perlin_curve(context, random_location, current_z):
 
     bpy.ops.mesh.primitive_circle_add(
-        vertices=512, radius=context['radius'], location=(0, 0, current_z)
+        vertices=512, radius=context["radius"], location=(0, 0, current_z)
     )
     circle = active_object()
     apply_location()
@@ -481,6 +481,9 @@ def main():
     """
     Python code for this art project
     https://www.artstation.com/artwork/48wX6L
+
+    Tutorial Video about this script:
+    https://www.youtube.com/watch?v=F-pQXfdt37o&list=PLB8-FQgROBmlzQ7Xkq4YU7u08Zh3iuyPD&index=8
     """
     context = setup_scene()
 
