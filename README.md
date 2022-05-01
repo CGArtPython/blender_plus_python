@@ -24,3 +24,11 @@ A tutorial series about creating art with Blender Python scripts
 [Watch tutorial](https://www.youtube.com/watch?v=1toJeVNOdnk)
 
 ![Python for Blender: Scripting a Video Grid image](/assets/images/video_grid.png)
+
+---
+
+# Python for Blender: How to import images into Blender’s video sequence editor
+
+[Watch tutorial](https://www.youtube.com/watch?v=DuiFrvs10TI)
+
+![Python for Blender: How to import images into Blender’s video sequence editor image](/assets/images/import_into_sequence_editor.png)
