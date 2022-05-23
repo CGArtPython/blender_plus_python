@@ -11,6 +11,15 @@ A tutorial series about creating art with Blender Python scripts
 
 ---
 
+# Blender Python Scripting: Outgoing Circle Loop
+
+[Watch tutorial](https://youtu.be/O1oE8KTbQyc)
+
+![Blender Python Scripting: Outgoing Circle Loop image](/assets/images/flow_out.png)
+
+
+---
+
 # Blender Python Scripting: Wireframe Cube Loop
 
 [Watch tutorial](https://www.youtube.com/watch?v=GgX7rGcrHVI)
