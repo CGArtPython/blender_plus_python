@@ -11,6 +11,14 @@ A tutorial series about creating art with Blender Python scripts
 
 ---
 
+# Abstract Animation Loop with Python in Blender
+
+[Watch tutorial](https://youtu.be/zRZn0VjsdH4)
+
+![Blender Python Scripting: Outgoing Circle Loop image](/assets/images/loop_of_rings.png)
+
+---
+
 # Blender Python Scripting: Outgoing Circle Loop
 
 [Watch tutorial](https://youtu.be/O1oE8KTbQyc)
