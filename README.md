@@ -25,6 +25,13 @@ A tutorial series about creating art with Blender Python scripts
 
 ![Blender Python Scripting: Outgoing Circle Loop image](/assets/images/flow_out.png)
 
+---
+
+# Tilt animation loop created with Python in Blender
+
+[Watch tutorial](https://www.youtube.com/watch?v=bWmnbEwEpqk)
+
+![Tilt animation loop created with Python in Blender image](/assets/images/weave.png)
 
 ---
 
