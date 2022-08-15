@@ -78,7 +78,7 @@ def create_transition_between_videos(video_folder_path, fps, clip_length_sec, vi
     start_frame_pos = 0
     clip_transition_overlap = 1 * fps
     for file_name in os.listdir(video_folder_path):
-        if not file_name in video_names:
+        if file_name not in video_names:
             continue
 
         video_name = file_name
