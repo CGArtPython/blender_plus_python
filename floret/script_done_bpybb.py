@@ -93,10 +93,7 @@ def set_scene_props(fps, loop_seconds):
     scene.frame_current = 1
     scene.frame_start = 1
 
-    # Use the CPU to render
-    scene.cycles.device = "CPU"
-
-    scene.cycles.samples = 1024
+    bpy.context.scene.eevee.use_bloom = True
 
     scene.view_settings.look = "Very High Contrast"
 
