@@ -19,11 +19,35 @@ A tutorial series about creating art with Blender Python scripts
 
 ---
 
-# Blender Python Scripting: Outgoing Circle Loop
+# Python + Blender: Metaball animation created with a script
 
-[Watch tutorial](https://youtu.be/O1oE8KTbQyc)
+[Watch tutorial](https://youtu.be/rIhXHSdMWmc)
 
-![Blender Python Scripting: Outgoing Circle Loop image](/assets/images/flow_out.png)
+![Python + Blender: Metaball animation created with a script image](/assets/images/in_or_out.png)
+
+---
+
+# Python + Blender: How to animate a phyllotaxis pattern
+
+[Watch tutorial](https://youtu.be/ml1hwMYskhc)
+
+![Python + Blender: How to animate a phyllotaxis pattern](/assets/images/floret.png)
+
+---
+
+# Python + Blender: How to animate a phyllotaxis pattern
+
+[Watch tutorial](https://youtu.be/ml1hwMYskhc)
+
+![Python + Blender: How to animate a phyllotaxis pattern](/assets/images/floret.png)
+
+---
+
+# Casting to a sphere animation loop created with a script
+
+[Watch tutorial](https://youtu.be/J3yerCN1-I4)
+
+![Casting to a sphere animation loop created with a script image](/assets/images/shapeshifting.png)
 
 ---
 
