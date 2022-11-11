@@ -1,3 +1,6 @@
+"""
+See YouTube tutorial here: https://youtu.be/xAy431Nbuw4
+"""
 import random
 import time
 import math
@@ -19,9 +22,7 @@ def purge_orphans():
     """
     if bpy.app.version >= (3, 0, 0):
         # run this only for Blender versions 3.0 and higher
-        bpy.ops.outliner.orphans_purge(
-            do_local_ids=True, do_linked_ids=True, do_recursive=True
-        )
+        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
     else:
         # run this only for Blender versions lower than 3.0
         # call purge_orphans() recursively until there are no more orphan data blocks to purge
@@ -299,9 +300,7 @@ def setup_scene():
 
 def gen_perlin_curve(context, random_location, current_z):
 
-    bpy.ops.mesh.primitive_circle_add(
-        vertices=512, radius=context["radius"], location=(0, 0, current_z)
-    )
+    bpy.ops.mesh.primitive_circle_add(vertices=512, radius=context["radius"], location=(0, 0, current_z))
     circle = active_object()
     apply_location()
 
@@ -379,9 +378,7 @@ def animate_curve(shape_key, start_frame):
 
 def gen_scene(context):
 
-    random_location = mathutils.Vector(
-        (random.uniform(0, 100), random.uniform(0, 100), random.uniform(0, 100))
-    )
+    random_location = mathutils.Vector((random.uniform(0, 100), random.uniform(0, 100), random.uniform(0, 100)))
 
     curve_count = 100
     context["bevel object"] = create_bevel_object()

@@ -1,3 +1,6 @@
+"""
+See YouTube tutorial here: https://youtu.be/aeDbYuJyXr8
+"""
 import random
 import time
 import math
@@ -19,9 +22,7 @@ def purge_orphans():
     """
     if bpy.app.version >= (3, 0, 0):
         # run this only for Blender versions 3.0 and higher
-        bpy.ops.outliner.orphans_purge(
-            do_local_ids=True, do_linked_ids=True, do_recursive=True
-        )
+        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
     else:
         # run this only for Blender versions lower than 3.0
         # call purge_orphans() recursively until there are no more orphan data blocks to purge
@@ -345,25 +346,15 @@ def gen_base_material():
     material_output_node.location.x = location_x
 
     # setup node links
-    material.node_tree.links.new(
-        principled_bsdf_node.outputs["BSDF"], material_output_node.inputs["Surface"]
-    )
+    material.node_tree.links.new(principled_bsdf_node.outputs["BSDF"], material_output_node.inputs["Surface"])
 
-    material.node_tree.links.new(
-        color_ramp_node.outputs["Color"], principled_bsdf_node.inputs["Base Color"]
-    )
+    material.node_tree.links.new(color_ramp_node.outputs["Color"], principled_bsdf_node.inputs["Base Color"])
 
-    material.node_tree.links.new(
-        mapping_node.outputs["Vector"], gradient_texture_node.inputs["Vector"]
-    )
+    material.node_tree.links.new(mapping_node.outputs["Vector"], gradient_texture_node.inputs["Vector"])
 
-    material.node_tree.links.new(
-        texture_coordinate_node.outputs["Object"], mapping_node.inputs["Vector"]
-    )
+    material.node_tree.links.new(texture_coordinate_node.outputs["Object"], mapping_node.inputs["Vector"])
 
-    material.node_tree.links.new(
-        gradient_texture_node.outputs["Color"], color_ramp_node.inputs["Fac"]
-    )
+    material.node_tree.links.new(gradient_texture_node.outputs["Color"], color_ramp_node.inputs["Fac"])
 
     return material
 
@@ -379,9 +370,7 @@ def setup_material(context):
 
 def gen_perlin_curve(context, random_location, current_z):
 
-    bpy.ops.mesh.primitive_circle_add(
-        vertices=512, radius=context["radius"], location=(0, 0, current_z)
-    )
+    bpy.ops.mesh.primitive_circle_add(vertices=512, radius=context["radius"], location=(0, 0, current_z))
     circle = active_object()
     apply_location()
 
@@ -461,9 +450,7 @@ def animate_curve(shape_key, start_frame):
 
 
 def gen_scene(context):
-    random_location = mathutils.Vector(
-        (random.uniform(0, 100), random.uniform(0, 100), random.uniform(0, 100))
-    )
+    random_location = mathutils.Vector((random.uniform(0, 100), random.uniform(0, 100), random.uniform(0, 100)))
 
     curve_count = 100
     context["material"] = setup_material(context)

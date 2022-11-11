@@ -1,3 +1,7 @@
+"""
+See YouTube tutorial here: https://youtu.be/aeDbYuJyXr8
+"""
+
 import random
 import time
 import math
@@ -19,9 +23,7 @@ def purge_orphans():
     """
     if bpy.app.version >= (3, 0, 0):
         # run this only for Blender versions 3.0 and higher
-        bpy.ops.outliner.orphans_purge(
-            do_local_ids=True, do_linked_ids=True, do_recursive=True
-        )
+        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
     else:
         # run this only for Blender versions lower than 3.0
         # call purge_orphans() recursively until there are no more orphan data blocks to purge

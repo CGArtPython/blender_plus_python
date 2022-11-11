@@ -1,3 +1,6 @@
+"""
+See YouTube tutorial here: https://youtu.be/4xtQsmBof_M
+"""
 import random
 import time
 import math
@@ -19,9 +22,7 @@ def purge_orphans():
     """
     if bpy.app.version >= (3, 0, 0):
         # run this only for Blender versions 3.0 and higher
-        bpy.ops.outliner.orphans_purge(
-            do_local_ids=True, do_linked_ids=True, do_recursive=True
-        )
+        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
     else:
         # run this only for Blender versions lower than 3.0
         # call purge_orphans() recursively until there are no more orphan data blocks to purge
@@ -320,9 +321,7 @@ def apply_hdri(path_to_image, bg_color, hdri_light_strength, bg_strength):
     location_x += 200
 
     # create the Environment Texture node
-    environment_texture_node = world_node_tree.nodes.new(
-        type="ShaderNodeTexEnvironment"
-    )
+    environment_texture_node = world_node_tree.nodes.new(type="ShaderNodeTexEnvironment")
     environment_texture_node.location.x = location_x
     location_x += 300
     environment_texture_node.image = bpy.data.images.load(path_to_image)
@@ -355,33 +354,19 @@ def apply_hdri(path_to_image, bg_color, hdri_light_strength, bg_strength):
     world_output_node.location.x = location_x
 
     # setup node links
-    world_node_tree.links.new(
-        texture_coordinate_node.outputs["Generated"], mapping_node.inputs["Vector"]
-    )
+    world_node_tree.links.new(texture_coordinate_node.outputs["Generated"], mapping_node.inputs["Vector"])
 
-    world_node_tree.links.new(
-        mapping_node.outputs["Vector"], environment_texture_node.inputs["Vector"]
-    )
+    world_node_tree.links.new(mapping_node.outputs["Vector"], environment_texture_node.inputs["Vector"])
 
-    world_node_tree.links.new(
-        environment_texture_node.outputs["Color"], background_node.inputs["Color"]
-    )
+    world_node_tree.links.new(environment_texture_node.outputs["Color"], background_node.inputs["Color"])
 
-    world_node_tree.links.new(
-        background_node.outputs["Background"], mix_shader_node.inputs["Shader"]
-    )
+    world_node_tree.links.new(background_node.outputs["Background"], mix_shader_node.inputs["Shader"])
 
-    world_node_tree.links.new(
-        background_node_2.outputs["Background"], mix_shader_node.inputs[2]
-    )
+    world_node_tree.links.new(background_node_2.outputs["Background"], mix_shader_node.inputs[2])
 
-    world_node_tree.links.new(
-        light_path_node.outputs["Is Camera Ray"], mix_shader_node.inputs["Fac"]
-    )
+    world_node_tree.links.new(light_path_node.outputs["Is Camera Ray"], mix_shader_node.inputs["Fac"])
 
-    world_node_tree.links.new(
-        mix_shader_node.outputs["Shader"], world_output_node.inputs["Surface"]
-    )
+    world_node_tree.links.new(mix_shader_node.outputs["Shader"], world_output_node.inputs["Surface"])
 
 
 def add_lights(context):
@@ -454,25 +439,15 @@ def gen_base_material():
     material_output_node.location.x = location_x
 
     # setup node links
-    material.node_tree.links.new(
-        principled_bsdf_node.outputs["BSDF"], material_output_node.inputs["Surface"]
-    )
+    material.node_tree.links.new(principled_bsdf_node.outputs["BSDF"], material_output_node.inputs["Surface"])
 
-    material.node_tree.links.new(
-        color_ramp_node.outputs["Color"], principled_bsdf_node.inputs["Base Color"]
-    )
+    material.node_tree.links.new(color_ramp_node.outputs["Color"], principled_bsdf_node.inputs["Base Color"])
 
-    material.node_tree.links.new(
-        mapping_node.outputs["Vector"], gradient_texture_node.inputs["Vector"]
-    )
+    material.node_tree.links.new(mapping_node.outputs["Vector"], gradient_texture_node.inputs["Vector"])
 
-    material.node_tree.links.new(
-        texture_coordinate_node.outputs["Object"], mapping_node.inputs["Vector"]
-    )
+    material.node_tree.links.new(texture_coordinate_node.outputs["Object"], mapping_node.inputs["Vector"])
 
-    material.node_tree.links.new(
-        gradient_texture_node.outputs["Color"], color_ramp_node.inputs["Fac"]
-    )
+    material.node_tree.links.new(gradient_texture_node.outputs["Color"], color_ramp_node.inputs["Fac"])
 
     return material
 
@@ -488,9 +463,7 @@ def setup_material(context):
 
 def gen_perlin_curve(context, random_location, current_z):
 
-    bpy.ops.mesh.primitive_circle_add(
-        vertices=512, radius=context["radius"], location=(0, 0, current_z)
-    )
+    bpy.ops.mesh.primitive_circle_add(vertices=512, radius=context["radius"], location=(0, 0, current_z))
     circle = active_object()
     apply_location()
 
@@ -576,9 +549,7 @@ def gen_scene(context):
 
 def gen_centerpiece(context):
 
-    random_location = mathutils.Vector(
-        (random.uniform(0, 100), random.uniform(0, 100), random.uniform(0, 100))
-    )
+    random_location = mathutils.Vector((random.uniform(0, 100), random.uniform(0, 100), random.uniform(0, 100)))
 
     curve_count = 100
     context["material"] = setup_material(context)
