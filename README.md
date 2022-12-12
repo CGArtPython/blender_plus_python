@@ -35,14 +35,6 @@ A tutorial series about creating art with Blender Python scripts
 
 ---
 
-# Python + Blender: How to animate a phyllotaxis pattern
-
-[Watch tutorial](https://youtu.be/ml1hwMYskhc)
-
-![Python + Blender: How to animate a phyllotaxis pattern](/assets/images/floret.png)
-
----
-
 # Casting to a sphere animation loop created with a script
 
 [Watch tutorial](https://youtu.be/J3yerCN1-I4)
