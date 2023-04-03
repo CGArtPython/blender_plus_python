@@ -1,5 +1,5 @@
 """
-See YouTube tutorial here: https://youtu.be/Is8Qu7onvzM
+See YouTube tutorial here: 
 """
 
 import random
@@ -170,15 +170,93 @@ def link_nodes_by_mesh_socket(node_tree, from_node, to_node):
     node_tree.links.new(from_node.outputs["Mesh"], to_node.inputs["Mesh"])
 
 
-def create_node(node_tree, type_name, node_x_location, node_location_step_x=0):
+def create_node(node_tree, type_name, node_x_location, node_location_step_x=0, node_y_location=0):
     """Creates a node of a given type, and sets/updates the location of the node on the X axis.
     Returning the node object and the next location on the X axis for the next node.
     """
     node_obj = node_tree.nodes.new(type=type_name)
     node_obj.location.x = node_x_location
+    node_obj.location.y = node_y_location
     node_x_location += node_location_step_x
 
     return node_obj, node_x_location
+
+
+def create_random_bool_value_node(node_tree, node_x_location, node_y_location):
+    separate_geo_random_value_node, node_x_location = create_node(node_tree, "FunctionNodeRandomValue", node_x_location, node_y_location=node_y_location)
+    target_output_type = "BOOLEAN"
+    separate_geo_random_value_node.data_type = target_output_type
+
+    random_value_node_output_lookup = {socket.type: socket for socket in separate_geo_random_value_node.outputs.values()}
+
+    target_output_socket = random_value_node_output_lookup[target_output_type]
+    return target_output_socket
+
+
+def create_separate_geo_node(node_tree, node_x_location, node_location_step_x):
+
+    random_value_node_output_socket = create_random_bool_value_node(node_tree, node_x_location, node_y_location=-200)
+
+    separate_geometry_node, node_x_location = create_node(node_tree, "GeometryNodeSeparateGeometry", node_x_location, node_location_step_x)
+    separate_geometry_node.domain = "FACE"
+
+    to_node = separate_geometry_node
+    node_tree.links.new(random_value_node_output_socket, to_node.inputs["Selection"])
+
+    return separate_geometry_node, node_x_location
+
+
+def create_scale_element_geo_node(node_tree, geo_selection_node_output, node_x_location, node_y_location):
+    random_value_node_output_socket = create_random_bool_value_node(node_tree, node_x_location, node_y_location=node_y_location - 200)
+
+    scale_elements_node, node_x_location = create_node(node_tree, "GeometryNodeScaleElements", node_x_location, node_y_location=node_y_location)
+    scale_elements_node.inputs["Scale"].default_value = 0.8
+
+    start_frame = random.randint(0, 150)
+
+    create_data_animation_loop(
+        scale_elements_node.inputs["Scale"],
+        "default_value",
+        start_value=0.0,
+        mid_value=0.8,
+        start_frame=start_frame,
+        loop_length=90,
+        linear_extrapolation=False,
+    )
+
+    to_node = scale_elements_node
+    node_tree.links.new(random_value_node_output_socket, to_node.inputs["Selection"])
+
+    to_node = scale_elements_node
+    node_tree.links.new(geo_selection_node_output, to_node.inputs["Geometry"])
+
+    return scale_elements_node
+
+
+def separate_faces_and_animate_scale(node_tree, node_x_location, node_location_step_x):
+
+    separate_geometry_node, node_x_location = create_separate_geo_node(node_tree, node_x_location, node_location_step_x)
+
+    scale_elements_geo_nodes = []
+    top_scale_elements_node = create_scale_element_geo_node(node_tree, separate_geometry_node.outputs["Selection"], node_x_location, node_y_location=200)
+    scale_elements_geo_nodes.append(top_scale_elements_node)
+
+    bottom_scale_elements_node = create_scale_element_geo_node(node_tree, separate_geometry_node.outputs["Inverted"], node_x_location, node_y_location=-200)
+    scale_elements_geo_nodes.append(bottom_scale_elements_node)
+
+    for fcurve in node_tree.animation_data.action.fcurves.values():
+        fcurve.modifiers.new(type="CYCLES")
+
+    node_x_location += node_location_step_x
+
+    join_geometry_node, node_x_location = create_node(node_tree, "GeometryNodeJoinGeometry", node_x_location, node_location_step_x)
+
+    for node in scale_elements_geo_nodes:
+        from_node = node
+        to_node = join_geometry_node
+        node_tree.links.new(from_node.outputs["Geometry"], to_node.inputs["Geometry"])
+
+    return separate_geometry_node, join_geometry_node, node_x_location
 
 
 def update_geo_node_tree(node_tree):
@@ -203,8 +281,7 @@ def update_geo_node_tree(node_tree):
 
     split_edges_node, node_x_location = create_node(node_tree, "GeometryNodeSplitEdges", node_x_location, node_location_step_x)
 
-    scale_elements_node, node_x_location = create_node(node_tree, "GeometryNodeScaleElements", node_x_location, node_location_step_x)
-    scale_elements_node.inputs["Scale"].default_value = 0.8
+    separate_geometry_node, join_geometry_node, node_x_location = separate_faces_and_animate_scale(node_tree, node_x_location, node_location_step_x)
 
     out_node.location.x = node_x_location
 
@@ -213,10 +290,10 @@ def update_geo_node_tree(node_tree):
     link_nodes_by_mesh_socket(node_tree, from_node=triangulate_node, to_node=split_edges_node)
 
     from_node = split_edges_node
-    to_node = scale_elements_node
+    to_node = separate_geometry_node
     node_tree.links.new(from_node.outputs["Mesh"], to_node.inputs["Geometry"])
 
-    from_node = scale_elements_node
+    from_node = join_geometry_node
     to_node = out_node
     node_tree.links.new(from_node.outputs["Geometry"], to_node.inputs["Geometry"])
 
@@ -230,6 +307,9 @@ def create_centerpiece():
     update_geo_node_tree(node_tree)
 
     bpy.ops.object.modifier_add(type="SOLIDIFY")
+
+    # make the Geo Nodes modifier the active mode at the end
+    bpy.context.active_object.modifiers["GeometryNodes"].is_active = True
 
 
 def main():
