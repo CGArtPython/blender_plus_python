@@ -742,6 +742,7 @@ def animate_displace_modifier(context):
     texture.noise_scale = 0.75
     texture.noise_intensity = 1
     texture.intensity = 0.4
+    texture.use_clamp = True
 
     loop_circle_path = add_bezier_circle(0.2)
     loop_circle_path.name = "loop_circle_path"
