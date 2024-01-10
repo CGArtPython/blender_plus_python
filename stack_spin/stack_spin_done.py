@@ -92,7 +92,6 @@ def time_seed():
 
 
 def add_ctrl_empty(name=None):
-
     bpy.ops.object.empty_add(type="PLAIN_AXES", align="WORLD")
     empty_ctrl = active_object()
 
@@ -188,7 +187,10 @@ def set_scene_props(fps, loop_seconds):
 
     scene.eevee.taa_render_samples = 64
 
-    scene.view_settings.look = "Very High Contrast"
+    if bpy.app.version < (4, 0, 0):
+        scene.view_settings.look = "Very High Contrast"
+    else:
+        scene.view_settings.look = "AgX - Very High Contrast"
 
     set_1080px_square_render_res()
 
@@ -265,7 +267,11 @@ def apply_random_color_material(obj):
     mat = bpy.data.materials.new(name="Material")
     mat.use_nodes = True
     mat.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = color
-    mat.node_tree.nodes["Principled BSDF"].inputs["Specular"].default_value = 0
+
+    if bpy.app.version < (4, 0, 0):
+        mat.node_tree.nodes["Principled BSDF"].inputs["Specular"].default_value = 0
+    else:
+        mat.node_tree.nodes["Principled BSDF"].inputs["Specular IOR Level"].default_value = 0
 
     obj.data.materials.append(mat)
 

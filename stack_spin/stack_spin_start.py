@@ -92,7 +92,6 @@ def time_seed():
 
 
 def add_ctrl_empty(name=None):
-
     bpy.ops.object.empty_add(type="PLAIN_AXES", align="WORLD")
     empty_ctrl = active_object()
 
@@ -188,7 +187,10 @@ def set_scene_props(fps, loop_seconds):
 
     scene.eevee.taa_render_samples = 64
 
-    scene.view_settings.look = "Very High Contrast"
+    if bpy.app.version < (4, 0, 0):
+        scene.view_settings.look = "Very High Contrast"
+    else:
+        scene.view_settings.look = "AgX - Very High Contrast"
 
     set_1080px_square_render_res()
 
