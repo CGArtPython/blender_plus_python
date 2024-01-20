@@ -5,9 +5,10 @@ import pprint
 import bpy
 
 
-def clean_sequencer(sequence_context):
-    bpy.ops.sequencer.select_all(sequence_context, action="SELECT")
-    bpy.ops.sequencer.delete(sequence_context)
+def clean_sequencer(sequence_editor_area):
+    with bpy.context.temp_override(area=sequence_editor_area):
+        bpy.ops.sequencer.select_all(action="SELECT")
+        bpy.ops.sequencer.delete()
 
 
 def find_sequence_editor():
@@ -66,23 +67,20 @@ def gen_video_from_images(image_folder_path, fps):
 
     set_up_output_params(image_folder_path, image_files, fps)
 
-    sequence_editor = find_sequence_editor()
+    sequence_editor_area = find_sequence_editor()
 
-    sequence_editor_context = {
-        "area": sequence_editor,
-    }
-    clean_sequencer(sequence_editor_context)
+    clean_sequencer(sequence_editor_area)
 
     file_info = list()
     for image_name in image_files:
         file_info.append({"name": image_name})
 
-    bpy.ops.sequencer.image_strip_add(
-        sequence_editor_context,
-        directory=image_folder_path + os.sep,
-        files=file_info,
-        frame_start=1,
-    )
+    with bpy.context.temp_override(area=sequence_editor_area):
+        bpy.ops.sequencer.image_strip_add(
+            directory=image_folder_path + os.sep,
+            files=file_info,
+            frame_start=1,
+        )
 
     bpy.ops.render.render(animation=True)
 
