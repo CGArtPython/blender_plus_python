@@ -224,7 +224,10 @@ def create_emissive_ring_material():
     color = get_random_color()
     material = bpy.data.materials.new(name="emissive_ring_material")
     material.use_nodes = True
-    material.node_tree.nodes["Principled BSDF"].inputs["Emission"].default_value = color
+    if bpy.app.version < (4, 0, 0):
+        material.node_tree.nodes["Principled BSDF"].inputs["Emission"].default_value = color
+    else:
+        material.node_tree.nodes["Principled BSDF"].inputs["Emission Color"].default_value = color
     material.node_tree.nodes["Principled BSDF"].inputs["Emission Strength"].default_value = 30.0
     return material
 
@@ -243,7 +246,10 @@ def create_floor_material():
     material = bpy.data.materials.new(name="floor_material")
     material.use_nodes = True
     material.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = color
-    material.node_tree.nodes["Principled BSDF"].inputs["Specular"].default_value = 0
+    if bpy.app.version < (4, 0, 0):
+        material.node_tree.nodes["Principled BSDF"].inputs["Specular"].default_value = 0
+    else:
+        material.node_tree.nodes["Principled BSDF"].inputs["Specular IOR Level"].default_value = 0
     return material
 
 
@@ -300,7 +306,10 @@ def set_scene_props(fps, loop_seconds):
     scene.cycles.device = "CPU"
     scene.cycles.samples = 200
 
-    scene.view_settings.look = "Very High Contrast"
+    if bpy.app.version < (4, 0, 0):
+        scene.view_settings.look = "Very High Contrast"
+    else:
+        scene.view_settings.look = "AgX - Very High Contrast"
 
     set_1080px_square_render_res()
 
