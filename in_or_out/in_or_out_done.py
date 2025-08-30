@@ -299,9 +299,22 @@ def create_reflective_material(color, name=None, roughness=0.1, specular=0.5, re
     material = bpy.data.materials.new(name=f"material.reflective.{name}")
     material.use_nodes = True
 
-    material.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = color
-    material.node_tree.nodes["Principled BSDF"].inputs["Roughness"].default_value = roughness
-    material.node_tree.nodes["Principled BSDF"].inputs["Specular"].default_value = specular
+    bsdf = material.node_tree.nodes["Principled BSDF"]
+    bsdf.inputs["Base Color"].default_value = color
+    bsdf.inputs["Roughness"].default_value = roughness
+    
+    # Handle different Principled BSDF inputs across Blender versions
+    if bpy.app.version >= (3, 0, 0):
+        # Blender 3.0+ uses "Specular" or might not have it depending on the version
+        if "Specular" in bsdf.inputs:
+            bsdf.inputs["Specular"].default_value = specular
+        elif "Specular IOR Level" in bsdf.inputs:
+            # Some newer versions use "Specular IOR Level"
+            bsdf.inputs["Specular IOR Level"].default_value = specular
+    else:
+        # Blender 2.x has "Specular"
+        if "Specular" in bsdf.inputs:
+            bsdf.inputs["Specular"].default_value = specular
 
     if return_nodes:
         return material, material.node_tree.nodes
@@ -392,7 +405,13 @@ def set_scene_props(fps, loop_seconds):
 
     scene.cycles.samples = 1024
 
-    scene.view_settings.look = "Very High Contrast"
+    # Set color management based on Blender version
+    if bpy.app.version >= (3, 0, 0):
+        # Blender 3.0+ uses AgX color management
+        scene.view_settings.look = "AgX - Very High Contrast"
+    else:
+        # Blender 2.x uses the older color management system
+        scene.view_settings.look = "Very High Contrast"
 
     set_1080px_square_render_res()
 
