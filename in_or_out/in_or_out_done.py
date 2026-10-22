@@ -3,6 +3,7 @@ import time
 import math
 
 import bpy
+from bpy_extras import anim_utils
 
 ################################################################
 # helper functions BEGIN
@@ -148,8 +149,24 @@ def set_1080px_square_render_res():
     bpy.context.scene.render.resolution_y = 1080
 
 
-def set_fcurve_extrapolation_to_linear():
-    for fc in bpy.context.active_object.animation_data.action.fcurves:
+def get_fcurves(obj):
+    """
+    Return the F-Curves of the object's action.
+
+    Blender 4.4 introduced slotted actions and Blender 5.0 removed the
+    legacy `action.fcurves`, so the F-Curves now live in a channelbag.
+    """
+    anim_data = obj.animation_data
+    if bpy.app.version >= (4, 4, 0):
+        channelbag = anim_utils.action_get_channelbag_for_slot(anim_data.action, anim_data.action_slot)
+        return channelbag.fcurves if channelbag else []
+    return anim_data.action.fcurves
+
+
+def set_fcurve_extrapolation_to_linear(obj=None):
+    if not obj:
+        obj = bpy.context.active_object
+    for fc in get_fcurves(obj):
         fc.extrapolation = "LINEAR"
 
 
@@ -245,7 +262,7 @@ def animate_rotation(angle, axis_index, last_frame, obj=None, clockwise=False, l
     obj.keyframe_insert("rotation_euler", index=axis_index, frame=frame)
 
     if linear:
-        set_fcurve_extrapolation_to_linear()
+        set_fcurve_extrapolation_to_linear(obj)
 
 
 def apply_rotation():
@@ -260,6 +277,12 @@ def apply_random_rotation():
     apply_rotation()
 
 
+def enable_material_nodes(material):
+    # materials always use nodes in Blender 5.0+ and `use_nodes` is deprecated
+    if bpy.app.version < (5, 0, 0):
+        material.use_nodes = True
+
+
 def apply_emission_material(color, name=None, energy=1):
     material = create_emission_material(color, name=name, energy=energy)
 
@@ -272,7 +295,7 @@ def create_emission_material(color, name=None, energy=30, return_nodes=False):
         name = ""
 
     material = bpy.data.materials.new(name=f"material.emission.{name}")
-    material.use_nodes = True
+    enable_material_nodes(material)
 
     out_node = material.node_tree.nodes.get("Material Output")
     bsdf_node = material.node_tree.nodes.get("Principled BSDF")
@@ -297,24 +320,17 @@ def create_reflective_material(color, name=None, roughness=0.1, specular=0.5, re
         name = ""
 
     material = bpy.data.materials.new(name=f"material.reflective.{name}")
-    material.use_nodes = True
+    enable_material_nodes(material)
 
     bsdf = material.node_tree.nodes["Principled BSDF"]
     bsdf.inputs["Base Color"].default_value = color
     bsdf.inputs["Roughness"].default_value = roughness
-    
-    # Handle different Principled BSDF inputs across Blender versions
-    if bpy.app.version >= (3, 0, 0):
-        # Blender 3.0+ uses "Specular" or might not have it depending on the version
-        if "Specular" in bsdf.inputs:
-            bsdf.inputs["Specular"].default_value = specular
-        elif "Specular IOR Level" in bsdf.inputs:
-            # Some newer versions use "Specular IOR Level"
-            bsdf.inputs["Specular IOR Level"].default_value = specular
-    else:
-        # Blender 2.x has "Specular"
-        if "Specular" in bsdf.inputs:
-            bsdf.inputs["Specular"].default_value = specular
+
+    # Principled BSDF v2 (Blender 4.0+) renamed "Specular" to "Specular IOR Level"
+    if "Specular IOR Level" in bsdf.inputs:
+        bsdf.inputs["Specular IOR Level"].default_value = specular
+    elif "Specular" in bsdf.inputs:
+        bsdf.inputs["Specular"].default_value = specular
 
     if return_nodes:
         return material, material.node_tree.nodes
@@ -405,12 +421,10 @@ def set_scene_props(fps, loop_seconds):
 
     scene.cycles.samples = 1024
 
-    # Set color management based on Blender version
-    if bpy.app.version >= (3, 0, 0):
-        # Blender 3.0+ uses AgX color management
+    # AgX became the default view transform in Blender 4.0
+    if bpy.app.version >= (4, 0, 0):
         scene.view_settings.look = "AgX - Very High Contrast"
     else:
-        # Blender 2.x uses the older color management system
         scene.view_settings.look = "Very High Contrast"
 
     set_1080px_square_render_res()
@@ -422,6 +436,9 @@ def scene_setup(i=0):
     frame_count = fps * loop_seconds
 
     project_name = "in_or_out"
+    # Blender 5.0+ requires choosing the "Video" media type before FFMPEG is a valid file format
+    if bpy.app.version >= (5, 0, 0):
+        bpy.context.scene.render.image_settings.media_type = "VIDEO"
     bpy.context.scene.render.image_settings.file_format = "FFMPEG"
     bpy.context.scene.render.ffmpeg.format = "MPEG4"
     bpy.context.scene.render.filepath = f"/tmp/project_{project_name}/loop_{i}.mp4"
@@ -459,27 +476,65 @@ def add_light():
     bpy.context.object.data.shape = "DISK"
 
 
-def apply_glare_composite_effect():
-    bpy.context.scene.use_nodes = True
+def get_compositor_node_tree():
+    """
+    Return the scene's compositor node tree along with its Render Layers and output nodes.
 
-    render_layer_node = bpy.context.scene.node_tree.nodes.get("Render Layers")
-    comp_node = bpy.context.scene.node_tree.nodes.get("Composite")
+    In Blender 5.0+ `scene.node_tree` is gone: the compositor is a node group assigned to
+    `scene.compositing_node_group`, and the Composite node is replaced by a Group Output.
+    """
+    scene = bpy.context.scene
+
+    if bpy.app.version < (5, 0, 0):
+        scene.use_nodes = True
+        node_tree = scene.node_tree
+        return node_tree, node_tree.nodes.get("Render Layers"), node_tree.nodes.get("Composite")
+
+    node_tree = scene.compositing_node_group
+    if node_tree is None:
+        node_tree = bpy.data.node_groups.new("Compositor Nodes", "CompositorNodeTree")
+        node_tree.interface.new_socket(name="Image", in_out="OUTPUT", socket_type="NodeSocketColor")
+        scene.compositing_node_group = node_tree
+
+    render_layer_node = node_tree.nodes.get("Render Layers")
+    if render_layer_node is None:
+        render_layer_node = node_tree.nodes.new(type="CompositorNodeRLayers")
+        render_layer_node.location = -300, 0
+
+    output_node = node_tree.nodes.get("Group Output")
+    if output_node is None:
+        output_node = node_tree.nodes.new(type="NodeGroupOutput")
+        output_node.location = 300, 0
+
+    return node_tree, render_layer_node, output_node
+
+
+def apply_glare_composite_effect():
+    node_tree, render_layer_node, comp_node = get_compositor_node_tree()
 
     # remove node_glare from the previous run
-    old_node_glare = bpy.context.scene.node_tree.nodes.get("Glare")
+    old_node_glare = node_tree.nodes.get("Glare")
     if old_node_glare:
-        bpy.context.scene.node_tree.nodes.remove(old_node_glare)
+        node_tree.nodes.remove(old_node_glare)
 
     # create Glare node
-    node_glare = bpy.context.scene.node_tree.nodes.new(type="CompositorNodeGlare")
-    node_glare.size = 7
-    node_glare.glare_type = "FOG_GLOW"
-    node_glare.quality = "HIGH"
-    node_glare.threshold = 0.2
+    node_glare = node_tree.nodes.new(type="CompositorNodeGlare")
+    if bpy.app.version >= (5, 0, 0):
+        # Glare settings became input sockets, and Size is now relative (0-1) instead of 1-9.
+        # The old size of 7 is roughly 2^(7-9) = 0.25
+        node_glare.inputs["Type"].default_value = "Fog Glow"
+        node_glare.inputs["Quality"].default_value = "High"
+        node_glare.inputs["Threshold"].default_value = 0.2
+        node_glare.inputs["Size"].default_value = 0.25
+    else:
+        node_glare.size = 7
+        node_glare.glare_type = "FOG_GLOW"
+        node_glare.quality = "HIGH"
+        node_glare.threshold = 0.2
 
     # create links
-    bpy.context.scene.node_tree.links.new(render_layer_node.outputs["Image"], node_glare.inputs["Image"])
-    bpy.context.scene.node_tree.links.new(node_glare.outputs["Image"], comp_node.inputs["Image"])
+    node_tree.links.new(render_layer_node.outputs["Image"], node_glare.inputs["Image"])
+    node_tree.links.new(node_glare.outputs["Image"], comp_node.inputs["Image"])
 
 
 ################################################################
